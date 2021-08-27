@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Windows;
 
 // Общие сведения об этой сборке предоставляются следующим набором
 // набора атрибутов. Измените значения этих атрибутов для изменения сведений,
@@ -21,6 +22,15 @@ using System.Runtime.InteropServices;
 
 // Следующий GUID служит для идентификации библиотеки типов, если этот проект будет видимым для COM
 [assembly: Guid("d1992d8f-1b09-467e-ad24-ee565a28fae9")]
+
+[assembly: ThemeInfo(
+	ResourceDictionaryLocation.None, //where theme specific resource dictionaries are located
+									 //(used if a resource is not found in the page, 
+									 // or application resource dictionaries)
+	ResourceDictionaryLocation.SourceAssembly //where the generic resource dictionary is located
+											  //(used if a resource is not found in the page, 
+											  // app, or any theme specific resource dictionaries)
+)]
 
 // Сведения о версии сборки состоят из указанных ниже четырех значений:
 //
