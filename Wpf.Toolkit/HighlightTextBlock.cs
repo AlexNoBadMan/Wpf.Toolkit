@@ -10,27 +10,33 @@ namespace Wpf.Toolkit
 {
     public class HighlightTextBlock : TextBlock
     {
-        public static readonly DependencyProperty HighlightedTextProperty = DependencyProperty.Register(
-          "HighlightedText",
-          typeof(string),
-          typeof(HighlightTextBlock),
-          new FrameworkPropertyMetadata(string.Empty, OnTextChanged));
+        public static readonly DependencyProperty HighlightedTextProperty = DependencyProperty.Register("HighlightedText", typeof(string), typeof(HighlightTextBlock),
+            new FrameworkPropertyMetadata(string.Empty, OnTextChanged));
+        
+        public static readonly DependencyProperty HighlightedTextColorProperty = DependencyProperty.Register("HighlightedTextColor", typeof(SolidColorBrush), typeof(HighlightTextBlock), 
+            new FrameworkPropertyMetadata(Brushes.LightBlue));
         
         public string HighlightedText
         {
             get { return (string)GetValue(HighlightedTextProperty); }
             set { SetValue(HighlightedTextProperty, value); }
         }
+        
+        public SolidColorBrush HighlightedTextColor
+        {
+            get { return (SolidColorBrush)GetValue(HighlightedTextColorProperty); }
+            set { SetValue(HighlightedTextColorProperty, value); }
+        }
 
         private static void OnTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is TextBlock textBlock)
-                textBlock.Dispatcher.BeginInvoke(
-                    new Action(() =>  SetTextBlockTextAndHighlightTerm(textBlock, (string)textBlock.GetValue(TextProperty), (string)textBlock.GetValue(HighlightedTextProperty)))
-                    ,System.Windows.Threading.DispatcherPriority.DataBind);
+            if (d is HighlightTextBlock textBlock)
+                textBlock.Dispatcher.BeginInvoke(new Action(() =>  
+                    SetTextBlockTextAndHighlightTerm(textBlock, (string)textBlock.GetValue(TextProperty), textBlock.HighlightedText, textBlock.HighlightedTextColor)), 
+                    System.Windows.Threading.DispatcherPriority.DataBind);
         }
 
-        private static void SetTextBlockTextAndHighlightTerm(TextBlock textBlock, string text, string highlightedText)
+        private static void SetTextBlockTextAndHighlightTerm(TextBlock textBlock, string text, string highlightedText, SolidColorBrush highlightedTextColor)
         {
             if (string.IsNullOrWhiteSpace(text) || !textBlock.IsVisible)
                 return;
@@ -57,7 +63,7 @@ namespace Wpf.Toolkit
             foreach (var textPart in textParts)
             {
                 if (textPart.Equals(highlightedText, StringComparison.OrdinalIgnoreCase))
-                    AddHighlightedPartToTextBlock(textBlock, textPart);
+                    AddHighlightedPartToTextBlock(textBlock, textPart, highlightedTextColor);
                 else
                     AddPartToTextBlock(textBlock, textPart);
             }
@@ -68,9 +74,9 @@ namespace Wpf.Toolkit
             textBlock.Inlines.Add(new Run { Text = part });
         }
 
-        private static void AddHighlightedPartToTextBlock(TextBlock textBlock, string part)
+        private static void AddHighlightedPartToTextBlock(TextBlock textBlock, string part, SolidColorBrush highlightedTextColor)
         {
-            textBlock.Inlines.Add(new Run { Text = part, Background = Brushes.LightBlue });
+            textBlock.Inlines.Add(new Run { Text = part, Background = highlightedTextColor });
         }
     }
 }
