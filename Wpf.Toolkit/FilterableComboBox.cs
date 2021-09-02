@@ -14,10 +14,15 @@ namespace Wpf.Toolkit
         private int _caretIndex;
         private bool _isNeedProcessSelection;
         private static readonly DependencyProperty FilterProperty = DependencyProperty.Register(nameof(FilterProperty), typeof(string), typeof(FilterableComboBox), new PropertyMetadata(new PropertyChangedCallback(FilterPropertyChangedCallback)));
+        
+        public bool IsAddExternalContainerMode { get => (bool)GetValue(IsAddExternalContainerModeProperty); set => SetValue(IsAddExternalContainerModeProperty, value); }
 
+        public static readonly DependencyProperty IsAddExternalContainerModeProperty = DependencyProperty.Register("IsAddExternalContainerMode", typeof(bool), typeof(FilterableComboBox), new UIPropertyMetadata(false, null));
+        
         public bool AllowFreeText { get => (bool)GetValue(AllowFreeTextProperty); set => SetValue(AllowFreeTextProperty, value); }
 
         public static readonly DependencyProperty AllowFreeTextProperty = DependencyProperty.Register("AllowFreeText", typeof(bool), typeof(FilterableComboBox), new UIPropertyMetadata(false, null));
+        
         public bool AutoSelectItem { get => (bool)GetValue(AutoSelectItemProperty); set => SetValue(AutoSelectItemProperty, value); }
 
         public static readonly DependencyProperty AutoSelectItemProperty = DependencyProperty.Register("AutoSelectItem", typeof(bool), typeof(FilterableComboBox), new UIPropertyMetadata(false, null));
@@ -41,16 +46,21 @@ namespace Wpf.Toolkit
 
         private void FilterableComboBox_Loaded(object sender, RoutedEventArgs e)
         {
-            if (!AllowFreeText)
+            if (IsAddExternalContainerMode)
             {
-                //GotFocus += new RoutedEventHandler(OnGotKeyboardFocus);
-                DropDownOpened += new EventHandler(OnDropDownOpened);
-                //DropDownClosed += new EventHandler(OnDropDownClosed);
-                LostKeyboardFocus += new KeyboardFocusChangedEventHandler(OnLostKeyboardFocus);
+                AddHandler(MouseLeftButtonUpEvent, new MouseButtonEventHandler(ComboBoxItem_MouseLeftButtonUp), true);
+                DropDownOpened += new EventHandler(OnAllowFreeTextDropDownOpened);
+                DropDownClosed += new EventHandler(OnAddExternalContainerModeDropDownClosed);
+            }
+            else if (AllowFreeText)
+            {
+                DropDownOpened += new EventHandler(OnAllowFreeTextDropDownOpened);
             }
             else
             {
-                DropDownOpened += new EventHandler(OnAllowFreeTextDropDownOpened);
+                //GotFocus += new RoutedEventHandler(OnGotKeyboardFocus);
+                DropDownOpened += new EventHandler(OnDropDownOpened);
+                LostKeyboardFocus += new KeyboardFocusChangedEventHandler(OnLostKeyboardFocus);
             }
             var binding = new Binding()
             {
@@ -72,6 +82,23 @@ namespace Wpf.Toolkit
             _editableTextBox.SelectionChanged += TextBox_SelectionChanged;
         }
 
+        private void OnAddExternalContainerModeDropDownClosed(object sender, EventArgs e)
+        {
+            SelectedIndex = -1;
+        }
+
+        private void ComboBoxItem_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (SelectedIndex == -1)
+                return;
+
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                GetBindingExpression(SelectedItemProperty).UpdateSource();
+                SelectedIndex = -1;
+            }), System.Windows.Threading.DispatcherPriority.DataBind);
+        }
+
         private void TextBox_SelectionChanged(object sender, RoutedEventArgs e)
         {
             if (_isNeedProcessSelection) //При открытии popup происходит не отключаемое выделение всего текста, сбрасываем выделение и ставим каретку в прежнее положение
@@ -90,6 +117,7 @@ namespace Wpf.Toolkit
             if (!IsDropDownOpen && (e.Key == Key.Down || e.Key == Key.Up))
             {
                 e.Handled = true;
+                IsDropDownOpen = true;
             }
             else if (IsDropDownOpen && e.Key == Key.F4) //Если не обработать то при нажатии F4 будет задан SelectedItem который был выбран в последний раз
             {
@@ -98,12 +126,12 @@ namespace Wpf.Toolkit
             }
             else if (e.Key == Key.Down || e.Key == Key.Up)
             {
-                //if (AllowFreeText)
-                //{
-                //    SelectedIndex = GetNextIndex(SelectedIndex, Items.Count, e.Key);//Может так удобнее будет?
-                //}
-                //else 
-                if (Items.Count > 0 && SelectedIndex == -1)// || GetText(SelectedItem) != Text)
+                if (AllowFreeText)
+                {
+                    SelectedIndex = GetNextIndex(SelectedIndex, Items.Count, e.Key);//Может так удобнее будет?
+                    _editableTextBox.CaretIndex = _editableTextBox.Text.Length;
+                }
+                else if (Items.Count > 0 && SelectedIndex == -1)// || GetText(SelectedItem) != Text)
                 {
                     e.Handled = true;//TextBox.SelectAll() -Не работает без указания Handled = true
                     SelectedIndex = GetNextIndex(SelectedIndex, Items.Count, e.Key);//Странный эффект если SelectedIndex == -1 то нажатие Key.Down прокручивает в конец списка
@@ -112,6 +140,11 @@ namespace Wpf.Toolkit
                 {
                     base.OnPreviewKeyDown(e);
                 }
+            }
+            else if (IsAddExternalContainerMode && e.Key == Key.Enter)
+            {
+                GetBindingExpression(SelectedItemProperty).UpdateSource();
+                SelectedIndex = -1;
             }
             else
             {
@@ -125,16 +158,21 @@ namespace Wpf.Toolkit
                 return;
 
             var text = Text ?? string.Empty;
-            if (text == string.Empty)
+            if (text == string.Empty) 
             {
-                SelectedItem = null;
                 Items.Filter = null;
-                if (!IsDropDownOpen)
-                    IsDropDownOpen = true;
+                //В режиме IsAddExternalContainerMode, при событии DropDownClosed происходит SelectedIndex = -1, 
+                //если попытаться при этом сделать IsDropDownOpen = true, будет ошибка открытия списка из события DropDownClosed
+                if (!IsAddExternalContainerMode) 
+                {
+                    SelectedIndex = -1;
+                    if (!IsDropDownOpen)
+                        IsDropDownOpen = true;
+                }
                 return;
             }
 
-            if (GetText(SelectedItem) == text)
+            if (SelectedIndex != -1 && GetText(SelectedItem) == text)
                 return;
 
             if (IsDropDownOpen)
@@ -205,7 +243,7 @@ namespace Wpf.Toolkit
             {
                 if (!AllowFreeText)
                 {
-                    if (Items.Count == 1)       //Обрабатываем ситуацию когда после потери фокуса не был выбран элемент но согласно фильтру остался один,
+                    if (AutoSelectItem && Items.Count == 1)       //Обрабатываем ситуацию когда после потери фокуса не был выбран элемент но согласно фильтру остался один,
                         SelectedItem = Items[0];//не имеет смысла когда исходная коллекция пуста или состоит из одного элемента
                     else
                         SetCurrentValue(TextProperty, string.Empty);
@@ -219,11 +257,6 @@ namespace Wpf.Toolkit
 
             SetCurrentValue(TextProperty, text);
         }
-        //private void OnDropDownClosed(object sender, EventArgs e)
-        //{
-        //    if (Items.Filter != null)
-        //        Items.Filter = null;
-        //}
 
         private void OnAllowFreeTextDropDownOpened(object sender, EventArgs e)
         {
