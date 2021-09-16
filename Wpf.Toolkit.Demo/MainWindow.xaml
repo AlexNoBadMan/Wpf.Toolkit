@@ -29,9 +29,15 @@
             </TabItem>
             <TabItem Header="№2">
                 <StackPanel>
-                    <TextBlock Margin="10 10 10 0" TextWrapping="Wrap" Text="Combobox с фильтром в режиме 'выбрать -> добавить'"/>
+                    <TextBlock Margin="10 10 10 0" TextWrapping="Wrap" Text="Combobox с фильтром и подсветкой текста в режиме 'выбрать -> добавить'"/>
                     <toolkit:FilterableComboBox Margin="10" IsAddExternalContainerMode="True" SelectedItem="{Binding AddSelectedOperation, Mode=OneWayToSource, UpdateSourceTrigger=Explicit}" 
-                                                WatermarkText="Выберите опрацию" ItemsSource="{Binding OperationsSource}" FocusVisualStyle="{x:Null}"/>
+                                                WatermarkText="Выберите опрацию" ItemsSource="{Binding OperationsSource}" FocusVisualStyle="{x:Null}">
+                        <toolkit:FilterableComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <toolkit:HighlightTextBlock Text="{Binding}" HighlightedText="{Binding Text, RelativeSource={RelativeSource AncestorType=ComboBox, Mode=FindAncestor}}"/>
+                            </DataTemplate>
+                        </toolkit:FilterableComboBox.ItemTemplate>
+                    </toolkit:FilterableComboBox>
                     <TextBlock Margin="10 10 10 0" TextWrapping="Wrap" Text="Столбец наименование Combobox с фильтром в режиме вольного текста"/>
                     <ListView Margin="10" ItemsSource="{Binding Operations}" KeyboardNavigation.TabNavigation="Continue">
                         <ListView.ItemContainerStyle>
