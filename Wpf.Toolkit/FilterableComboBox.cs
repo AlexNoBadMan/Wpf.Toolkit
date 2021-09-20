@@ -49,7 +49,7 @@ namespace Wpf.Toolkit
             if (IsAddExternalContainerMode)
             {
                 AddHandler(MouseLeftButtonUpEvent, new MouseButtonEventHandler(ComboBoxItem_MouseLeftButtonUp), true);
-                DropDownOpened += new EventHandler(OnAllowFreeTextDropDownOpened);
+                DropDownOpened += new EventHandler(OnDropDownOpened);
                 DropDownClosed += new EventHandler(OnAddExternalContainerModeDropDownClosed);
             }
             else if (AllowFreeText)
