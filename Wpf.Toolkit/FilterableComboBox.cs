@@ -14,42 +14,43 @@ namespace Wpf.Toolkit
         private TextBox _editableTextBox;
         private int _caretIndex;
         private bool _isNeedProcessSelection;
+        private DispatcherTimer? _deferFilterEvaluationTimer;
 
         public static readonly DependencyProperty SearchTextProperty = DependencyProperty.Register(nameof(SearchTextProperty), typeof(string), typeof(FilterableComboBox), new PropertyMetadata(new PropertyChangedCallback(FilterPropertyChangedCallback)));
         public string SearchText //можно использовать для подсвечивания
         {
-            get => (string)GetValue(SearchTextProperty); 
+            get => (string)GetValue(SearchTextProperty);
         }
 
         public static readonly DependencyProperty IsAddExternalContainerModeProperty = DependencyProperty.Register(nameof(IsAddExternalContainerMode), typeof(bool), typeof(FilterableComboBox), new UIPropertyMetadata(false, null));
-        public bool IsAddExternalContainerMode 
-        { 
-            get => (bool)GetValue(IsAddExternalContainerModeProperty); 
-            set => SetValue(IsAddExternalContainerModeProperty, value); 
+        public bool IsAddExternalContainerMode
+        {
+            get => (bool)GetValue(IsAddExternalContainerModeProperty);
+            set => SetValue(IsAddExternalContainerModeProperty, value);
         }
 
-        
+
         public static readonly DependencyProperty AllowFreeTextProperty = DependencyProperty.Register(nameof(AllowFreeText), typeof(bool), typeof(FilterableComboBox), new UIPropertyMetadata(false, null));
-        public bool AllowFreeText 
-        { 
-            get => (bool)GetValue(AllowFreeTextProperty); 
-            set => SetValue(AllowFreeTextProperty, value); 
+        public bool AllowFreeText
+        {
+            get => (bool)GetValue(AllowFreeTextProperty);
+            set => SetValue(AllowFreeTextProperty, value);
         }
 
-        
+
         public static readonly DependencyProperty AutoSelectItemProperty = DependencyProperty.Register(nameof(AutoSelectItem), typeof(bool), typeof(FilterableComboBox), new UIPropertyMetadata(false, null));
-        public bool AutoSelectItem 
-        { 
-            get => (bool)GetValue(AutoSelectItemProperty); 
-            set => SetValue(AutoSelectItemProperty, value); 
+        public bool AutoSelectItem
+        {
+            get => (bool)GetValue(AutoSelectItemProperty);
+            set => SetValue(AutoSelectItemProperty, value);
         }
 
-        
+
         public static readonly DependencyProperty FilterDelayProperty = DependencyProperty.Register(nameof(FilterDelay), typeof(int), typeof(FilterableComboBox), new UIPropertyMetadata(0, null));
-        public int FilterDelay 
-        { 
-            get => (int)GetValue(FilterDelayProperty); 
-            set => SetValue(FilterDelayProperty, value); 
+        public int FilterDelay
+        {
+            get => (int)GetValue(FilterDelayProperty);
+            set => SetValue(FilterDelayProperty, value);
         }
 
 
@@ -194,6 +195,18 @@ namespace Wpf.Toolkit
                 return;
             }
 
+            if (_deferFilterEvaluationTimer == null)
+                _deferFilterEvaluationTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(FilterDelay), DispatcherPriority.Input, (_, _) => EvaluateFilter(), Dispatcher.CurrentDispatcher);
+
+            _deferFilterEvaluationTimer.Stop();
+            _deferFilterEvaluationTimer.Start();
+        }
+
+        private void EvaluateFilter()
+        {
+            _deferFilterEvaluationTimer?.Stop();
+
+            var text = Text;
             if (SelectedIndex != -1 && GetText(SelectedItem) == text)
                 return;
 
@@ -219,7 +232,6 @@ namespace Wpf.Toolkit
                 }
             }
         }
-
 
         private static void FilterPropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
