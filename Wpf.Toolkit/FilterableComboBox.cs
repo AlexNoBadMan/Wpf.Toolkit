@@ -4,32 +4,54 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace Wpf.Toolkit
 {
     public class FilterableComboBox : WatermarkedComboBox
     {
-        private bool isLoaded;
+        private bool _isLoaded;
         private TextBox _editableTextBox;
         private int _caretIndex;
         private bool _isNeedProcessSelection;
-        private static readonly DependencyProperty FilterProperty = DependencyProperty.Register(nameof(FilterProperty), typeof(string), typeof(FilterableComboBox), new PropertyMetadata(new PropertyChangedCallback(FilterPropertyChangedCallback)));
-        
-        public bool IsAddExternalContainerMode { get => (bool)GetValue(IsAddExternalContainerModeProperty); set => SetValue(IsAddExternalContainerModeProperty, value); }
 
-        public static readonly DependencyProperty IsAddExternalContainerModeProperty = DependencyProperty.Register("IsAddExternalContainerMode", typeof(bool), typeof(FilterableComboBox), new UIPropertyMetadata(false, null));
-        
-        public bool AllowFreeText { get => (bool)GetValue(AllowFreeTextProperty); set => SetValue(AllowFreeTextProperty, value); }
+        public static readonly DependencyProperty SearchTextProperty = DependencyProperty.Register(nameof(SearchTextProperty), typeof(string), typeof(FilterableComboBox), new PropertyMetadata(new PropertyChangedCallback(FilterPropertyChangedCallback)));
+        public string SearchText //можно использовать для подсвечивания
+        {
+            get => (string)GetValue(SearchTextProperty); 
+        }
 
-        public static readonly DependencyProperty AllowFreeTextProperty = DependencyProperty.Register("AllowFreeText", typeof(bool), typeof(FilterableComboBox), new UIPropertyMetadata(false, null));
-        
-        public bool AutoSelectItem { get => (bool)GetValue(AutoSelectItemProperty); set => SetValue(AutoSelectItemProperty, value); }
+        public static readonly DependencyProperty IsAddExternalContainerModeProperty = DependencyProperty.Register(nameof(IsAddExternalContainerMode), typeof(bool), typeof(FilterableComboBox), new UIPropertyMetadata(false, null));
+        public bool IsAddExternalContainerMode 
+        { 
+            get => (bool)GetValue(IsAddExternalContainerModeProperty); 
+            set => SetValue(IsAddExternalContainerModeProperty, value); 
+        }
 
-        public static readonly DependencyProperty AutoSelectItemProperty = DependencyProperty.Register("AutoSelectItem", typeof(bool), typeof(FilterableComboBox), new UIPropertyMetadata(false, null));
         
-        public int FilterDelay { get => (int)GetValue(FilterDelayProperty); set => SetValue(FilterDelayProperty, value); }
+        public static readonly DependencyProperty AllowFreeTextProperty = DependencyProperty.Register(nameof(AllowFreeText), typeof(bool), typeof(FilterableComboBox), new UIPropertyMetadata(false, null));
+        public bool AllowFreeText 
+        { 
+            get => (bool)GetValue(AllowFreeTextProperty); 
+            set => SetValue(AllowFreeTextProperty, value); 
+        }
 
-        public static readonly DependencyProperty FilterDelayProperty = DependencyProperty.Register("FilterDelay", typeof(int), typeof(FilterableComboBox), new UIPropertyMetadata(0, null));
+        
+        public static readonly DependencyProperty AutoSelectItemProperty = DependencyProperty.Register(nameof(AutoSelectItem), typeof(bool), typeof(FilterableComboBox), new UIPropertyMetadata(false, null));
+        public bool AutoSelectItem 
+        { 
+            get => (bool)GetValue(AutoSelectItemProperty); 
+            set => SetValue(AutoSelectItemProperty, value); 
+        }
+
+        
+        public static readonly DependencyProperty FilterDelayProperty = DependencyProperty.Register(nameof(FilterDelay), typeof(int), typeof(FilterableComboBox), new UIPropertyMetadata(0, null));
+        public int FilterDelay 
+        { 
+            get => (int)GetValue(FilterDelayProperty); 
+            set => SetValue(FilterDelayProperty, value); 
+        }
+
 
         static FilterableComboBox()
         {
@@ -70,8 +92,8 @@ namespace Wpf.Toolkit
                 RelativeSource = new RelativeSource(RelativeSourceMode.Self),
                 Path = new PropertyPath("Text", Array.Empty<object>())
             };
-            SetBinding(FilterProperty, binding);
-            isLoaded = true;
+            SetBinding(SearchTextProperty, binding);
+            _isLoaded = true;
         }
 
         public override void OnApplyTemplate()
@@ -154,16 +176,16 @@ namespace Wpf.Toolkit
 
         protected virtual void OnSearchTextPropertyChanged(string oldValue, string newValue)
         {
-            if (!isLoaded || oldValue == newValue || !IsKeyboardFocusWithin)
+            if (!_isLoaded || oldValue == newValue || !IsKeyboardFocusWithin)
                 return;
 
             var text = Text ?? string.Empty;
-            if (text == string.Empty) 
+            if (text == string.Empty)
             {
                 Items.Filter = null;
                 //В режиме IsAddExternalContainerMode, при событии DropDownClosed происходит SelectedIndex = -1, 
                 //если попытаться при этом сделать IsDropDownOpen = true, будет ошибка открытия списка из события DropDownClosed
-                if (!IsAddExternalContainerMode) 
+                if (!IsAddExternalContainerMode)
                 {
                     SelectedIndex = -1;
                     if (!IsDropDownOpen)
@@ -197,6 +219,7 @@ namespace Wpf.Toolkit
                 }
             }
         }
+
 
         private static void FilterPropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -312,8 +335,7 @@ namespace Wpf.Toolkit
                 }
                 else
                 {
-                    PropertyInfo property = item.GetType().GetProperty(text);
-                    result = (string)(property?.GetValue(item, null));
+                    result = (string)(item.GetType().GetProperty(text)?.GetValue(item, null));
                 }
             }
             return result;
