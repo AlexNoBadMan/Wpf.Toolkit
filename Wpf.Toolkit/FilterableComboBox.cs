@@ -177,6 +177,11 @@ namespace Wpf.Toolkit
 
         protected virtual void OnSearchTextPropertyChanged(string oldValue, string newValue)
         {
+            if (_deferFilterEvaluationTimer == null)
+                _deferFilterEvaluationTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(FilterDelay), DispatcherPriority.Input, (_, _) => EvaluateFilter(), Dispatcher.CurrentDispatcher);
+
+            _deferFilterEvaluationTimer.Stop();
+
             if (!_isLoaded || oldValue == newValue || !IsKeyboardFocusWithin)
                 return;
 
@@ -195,10 +200,6 @@ namespace Wpf.Toolkit
                 return;
             }
 
-            if (_deferFilterEvaluationTimer == null)
-                _deferFilterEvaluationTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(FilterDelay), DispatcherPriority.Input, (_, _) => EvaluateFilter(), Dispatcher.CurrentDispatcher);
-
-            _deferFilterEvaluationTimer.Stop();
             _deferFilterEvaluationTimer.Start();
         }
 
