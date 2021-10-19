@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -154,7 +155,7 @@ namespace Wpf.Toolkit
                     SelectedIndex = GetNextIndex(SelectedIndex, Items.Count, e.Key);//Может так удобнее будет?
                     _editableTextBox.CaretIndex = _editableTextBox.Text.Length;
                 }
-                else if (Items.Count > 0 && SelectedIndex == -1)// || GetText(SelectedItem) != Text)
+                else if (Items.Count > 0)
                 {
                     e.Handled = true;//TextBox.SelectAll() -Не работает без указания Handled = true
                     SelectedIndex = GetNextIndex(SelectedIndex, Items.Count, e.Key);//Странный эффект если SelectedIndex == -1 то нажатие Key.Down прокручивает в конец списка
@@ -175,12 +176,19 @@ namespace Wpf.Toolkit
             }
         }
 
+        Dispatcher dispatcher;
         protected virtual void OnSearchTextPropertyChanged(string oldValue, string newValue)
         {
-            if (_deferFilterEvaluationTimer == null)
-                _deferFilterEvaluationTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(FilterDelay), DispatcherPriority.Input, (_, _) => EvaluateFilter(), Dispatcher.CurrentDispatcher);
+            //System.Diagnostics.Debug.WriteLine("2. Tch");
+            //if (_deferFilterEvaluationTimer is null)
+            //{
+            //    _deferFilterEvaluationTimer = new DispatcherTimer(DispatcherPriority.Input, Dispatcher.CurrentDispatcher);
+            //    _deferFilterEvaluationTimer.Interval = TimeSpan.FromMilliseconds(FilterDelay);
+            //    _deferFilterEvaluationTimer.Tick += (_, _) => EvaluateFilter();
+            //}
 
-            _deferFilterEvaluationTimer.Stop();
+            //if (_deferFilterEvaluationTimer.IsEnabled)
+            //    _deferFilterEvaluationTimer.Stop();
 
             if (!_isLoaded || oldValue == newValue || !IsKeyboardFocusWithin)
                 return;
@@ -199,8 +207,11 @@ namespace Wpf.Toolkit
                 }
                 return;
             }
+            EvaluateFilter();
+            //Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() => { Items.Filter = Contains; }));
 
-            _deferFilterEvaluationTimer.Start();
+            //System.Diagnostics.Debug.WriteLine("3. Перед старт EvaluateFilter");
+            //_deferFilterEvaluationTimer.Start();
         }
 
         private void EvaluateFilter()
@@ -208,12 +219,18 @@ namespace Wpf.Toolkit
             _deferFilterEvaluationTimer?.Stop();
 
             var text = Text;
+            //System.Diagnostics.Debug.WriteLine($"4. Старт EvaluateFilter {text}");
             if (SelectedIndex != -1 && GetText(SelectedItem) == text)
                 return;
 
             if (IsDropDownOpen)
             {
-                Items.Filter = new Predicate<object>(Contains);
+                //System.Diagnostics.Debug.WriteLine($"5. перед Filter {text}");
+                //Dispatcher.CurrentDispatcher.Invoke(new Action(() => { Items.Filter = Contains; }));
+                //var uiDispatcher = System.Windows.Application.Current.Dispatcher;
+                //uiDispatcher.Invoke(new Action(() => Items.Filter = Contains));
+                Items.Filter = Contains;
+                //System.Diagnostics.Debug.WriteLine($"6. после Filter {text}");
             }
             else
             {
@@ -232,10 +249,12 @@ namespace Wpf.Toolkit
                     }
                 }
             }
+            //System.Diagnostics.Debug.WriteLine($"7. Конец EvaluateFilter {text}");
         }
 
         private static void FilterPropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
+            //System.Diagnostics.Debug.WriteLine($"1. Main {e.OldValue} - {e.NewValue}");
             ((FilterableComboBox)d).OnSearchTextPropertyChanged(e.OldValue as string, e.NewValue as string);
         }
 
@@ -303,7 +322,7 @@ namespace Wpf.Toolkit
         private void OnDropDownOpened(object sender, EventArgs e)
         {
             var text = _editableTextBox.Text;
-            Items.Filter = SelectedItem != null && GetText(SelectedItem) == text ? null : new Predicate<object>(Contains);
+            Items.Filter = SelectedItem != null && GetText(SelectedItem) == text ? null : Contains;
         }
 
         private int GetNextIndex(int selectedIndex, int count, Key key)
