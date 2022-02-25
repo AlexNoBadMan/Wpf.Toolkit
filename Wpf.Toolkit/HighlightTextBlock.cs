@@ -13,30 +13,41 @@ namespace Wpf.Toolkit
         public static readonly DependencyProperty HighlightedTextProperty = DependencyProperty.Register("HighlightedText", typeof(string), typeof(HighlightTextBlock),
             new FrameworkPropertyMetadata(string.Empty, OnTextChanged));
         
-        public static readonly DependencyProperty HighlightedTextColorProperty = DependencyProperty.Register("HighlightedTextColor", typeof(SolidColorBrush), typeof(HighlightTextBlock), 
-            new FrameworkPropertyMetadata(Brushes.LightBlue));
-        
         public string HighlightedText
         {
             get { return (string)GetValue(HighlightedTextProperty); }
             set { SetValue(HighlightedTextProperty, value); }
         }
         
-        public SolidColorBrush HighlightedTextColor
+        public static readonly DependencyProperty HighlightedTextForegroundProperty = DependencyProperty.Register("HighlightedTextForeground", typeof(SolidColorBrush), typeof(HighlightTextBlock), 
+            new FrameworkPropertyMetadata(Brushes.Black));
+        
+        public SolidColorBrush HighlightedTextForeground
         {
-            get { return (SolidColorBrush)GetValue(HighlightedTextColorProperty); }
-            set { SetValue(HighlightedTextColorProperty, value); }
+            get { return (SolidColorBrush)GetValue(HighlightedTextForegroundProperty); }
+            set { SetValue(HighlightedTextForegroundProperty, value); }
+        }
+
+        public static readonly DependencyProperty HighlightedTextBackgroundProperty = DependencyProperty.Register("HighlightedTextBackground", typeof(SolidColorBrush), typeof(HighlightTextBlock), 
+            new FrameworkPropertyMetadata(Brushes.LightBlue));
+        
+        public SolidColorBrush HighlightedTextBackground
+        {
+            get { return (SolidColorBrush)GetValue(HighlightedTextBackgroundProperty); }
+            set { SetValue(HighlightedTextBackgroundProperty, value); }
         }
 
         private static void OnTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is HighlightTextBlock textBlock)
-                textBlock.Dispatcher.BeginInvoke(new Action(() =>  
-                    SetTextBlockTextAndHighlightTerm(textBlock, (string)textBlock.GetValue(TextProperty), textBlock.HighlightedText, textBlock.HighlightedTextColor)), 
-                    System.Windows.Threading.DispatcherPriority.DataBind);
+            if (!(d is HighlightTextBlock textBlock))
+                return;
+
+            textBlock.Dispatcher.BeginInvoke(new Action(() =>
+            SetTextBlockTextAndHighlightTerm(textBlock, (string)textBlock.GetValue(TextProperty), textBlock.HighlightedText, textBlock.HighlightedTextBackground, textBlock.HighlightedTextForeground)),
+                                             System.Windows.Threading.DispatcherPriority.DataBind);
         }
 
-        private static void SetTextBlockTextAndHighlightTerm(TextBlock textBlock, string text, string highlightedText, SolidColorBrush highlightedTextColor)
+        private static void SetTextBlockTextAndHighlightTerm(TextBlock textBlock, string text, string highlightedText, SolidColorBrush highlightedTextBackground, SolidColorBrush highlightedTextForeground)
         {
             if (string.IsNullOrWhiteSpace(text) || !textBlock.IsVisible)
                 return;
@@ -63,7 +74,7 @@ namespace Wpf.Toolkit
             foreach (var textPart in textParts)
             {
                 if (textPart.Equals(highlightedText, StringComparison.OrdinalIgnoreCase))
-                    AddHighlightedPartToTextBlock(textBlock, textPart, highlightedTextColor);
+                    AddHighlightedPartToTextBlock(textBlock, textPart, highlightedTextBackground, highlightedTextForeground);
                 else
                     AddPartToTextBlock(textBlock, textPart);
             }
@@ -74,9 +85,9 @@ namespace Wpf.Toolkit
             textBlock.Inlines.Add(new Run { Text = part });
         }
 
-        private static void AddHighlightedPartToTextBlock(TextBlock textBlock, string part, SolidColorBrush highlightedTextColor)
+        private static void AddHighlightedPartToTextBlock(TextBlock textBlock, string part, SolidColorBrush highlightedTextBackground, SolidColorBrush highlightedTextForeground)
         {
-            textBlock.Inlines.Add(new Run { Text = part, Background = highlightedTextColor });
+            textBlock.Inlines.Add(new Run { Text = part, Background = highlightedTextBackground, Foreground = highlightedTextForeground });
         }
     }
 }
