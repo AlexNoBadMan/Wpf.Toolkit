@@ -91,6 +91,7 @@
     <Compile Include="Themes\Generic.xaml.cs">
       <DependentUpon>Generic.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UICommands\DataGridEx.cs" />
     <Compile Include="WatermarkedComboBox.cs" />
     <Compile Include="WatermarkedTextBox.cs" />
   </ItemGroup>
