@@ -67,7 +67,7 @@ namespace Wpf.Toolkit
             IsTextSearchEnabled = false;
             Loaded += FilterableComboBox_Loaded;
         }
-
+     
         private void FilterableComboBox_Loaded(object sender, RoutedEventArgs e)
         {
             if (IsAddExternalContainerMode)

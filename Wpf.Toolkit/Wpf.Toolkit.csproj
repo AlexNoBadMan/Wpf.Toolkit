@@ -86,7 +86,7 @@
   <ItemGroup>
     <Compile Include="DependencyObjectExtensions.cs" />
     <Compile Include="FilterableComboBox.cs" />
-    <Compile Include="HighlightTextBlock.cs" />
+    <Compile Include="Behaviors\TextBlockHighlightBehavior.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Themes\Generic.xaml.cs">
       <DependentUpon>Generic.xaml</DependentUpon>

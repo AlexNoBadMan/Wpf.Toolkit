@@ -20,9 +20,6 @@ namespace Wpf.Toolkit.Themes
     /// </summary>
     public partial class Generic : ResourceDictionary
     {
-        //public Generic()
-        //{
-        //    InitializeComponent();
-        //}
+
     }
 }

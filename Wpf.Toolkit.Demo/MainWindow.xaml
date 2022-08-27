@@ -5,75 +5,76 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Wpf.Toolkit.Demo"
         xmlns:toolkit="clr-namespace:Wpf.Toolkit;assembly=Wpf.Toolkit"
+        xmlns:toolkitBeh="clr-namespace:Wpf.Toolkit.Behaviors;assembly=Wpf.Toolkit"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800"
-        >
-    <Window.DataContext>
-        <local:DemoViewModel/>
-    </Window.DataContext>
-    <DockPanel>
-        <TabControl>
-            <TabItem Header="№1">
-                <StackPanel>
-                    <TextBlock Margin="10" TextWrapping="Wrap" Text="Combobox с фильтром и автоматическим выбором элемента, если написать часть существующего текста и переместить фокус с элемента то автоматически будет выбран первый элемент. Не допускается вольный текст."/>
-                    <StackPanel Margin="9 5">
-                        <TextBlock Margin="0 1 1 1" Text="Участок:" HorizontalAlignment="Left"/>
-                        <toolkit:FilterableComboBox AutoSelectItem="True" WatermarkText="Цех..." DisplayMemberPath="Name" ItemsSource="{Binding Shops}" SelectedItem="{Binding SelectedShop, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" FocusVisualStyle="{x:Null}"/>
-                    </StackPanel>
-                    <StackPanel Margin="9 5">
-                        <TextBlock Margin="0 1 1 1" Text="Участок:" HorizontalAlignment="Left"/>
-                        <toolkit:FilterableComboBox AutoSelectItem="True" WatermarkText="Участок..."  DisplayMemberPath="Name" ItemsSource="{Binding SelectedShop.Areas}" SelectedItem="{Binding SelectedArea, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" FocusVisualStyle="{x:Null}"/>
-                       
-                    </StackPanel>
-                </StackPanel>
-            </TabItem>
-            <TabItem Header="№2">
-                <StackPanel>
-                    <TextBlock Margin="10 10 10 0" TextWrapping="Wrap" Text="Combobox с фильтром и подсветкой текста в режиме 'выбрать -> добавить'"/>
-                    <toolkit:FilterableComboBox Margin="10" FilterDelay="300" IsAddExternalContainerMode="True" SelectedItem="{Binding AddSelectedOperation, Mode=OneWayToSource, UpdateSourceTrigger=Explicit}" 
+        Title="MainWindow" Height="450" Width="800">
+  <Window.DataContext>
+    <local:DemoViewModel/>
+  </Window.DataContext>
+  <DockPanel>
+    <TabControl>
+      <TabItem Header="№1">
+        <StackPanel>
+          <TextBlock Margin="10" TextWrapping="Wrap" Text="Combobox с фильтром и автоматическим выбором элемента, если написать часть существующего текста и переместить фокус с элемента то автоматически будет выбран первый элемент. Не допускается вольный текст."/>
+          <StackPanel Margin="9 5">
+            <TextBlock Margin="0 1 1 1" Text="Участок:" HorizontalAlignment="Left"/>
+            <toolkit:FilterableComboBox AutoSelectItem="True" WatermarkText="Цех..." DisplayMemberPath="Name" ItemsSource="{Binding Shops}" SelectedItem="{Binding SelectedShop, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" FocusVisualStyle="{x:Null}"/>
+          </StackPanel>
+          <StackPanel Margin="9 5">
+            <TextBlock Margin="0 1 1 1" Text="Участок:" HorizontalAlignment="Left"/>
+            <toolkit:FilterableComboBox AutoSelectItem="True" WatermarkText="Участок..." DisplayMemberPath="Name" ItemsSource="{Binding SelectedShop.Areas}" SelectedItem="{Binding SelectedArea, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" FocusVisualStyle="{x:Null}"/>
+
+          </StackPanel>
+        </StackPanel>
+      </TabItem>
+      <TabItem Header="№2">
+        <StackPanel>
+          <TextBlock Margin="10 10 10 0" TextWrapping="Wrap" Text="Combobox с фильтром и подсветкой текста в режиме 'выбрать -> добавить'"/>
+          <toolkit:FilterableComboBox Margin="10" FilterDelay="300" IsAddExternalContainerMode="True" SelectedItem="{Binding AddSelectedOperation, Mode=OneWayToSource, UpdateSourceTrigger=Explicit}" 
                                                 WatermarkText="Выберите опрацию" ItemsSource="{Binding OperationsSource}" FocusVisualStyle="{x:Null}">
-                        <toolkit:FilterableComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <toolkit:HighlightTextBlock Text="{Binding}" HighlightedText="{Binding SearchText, RelativeSource={RelativeSource AncestorType=toolkit:FilterableComboBox, Mode=FindAncestor}}"/>
-                            </DataTemplate>
-                        </toolkit:FilterableComboBox.ItemTemplate>
-                    </toolkit:FilterableComboBox>
-                    <TextBlock Margin="10 10 10 0" TextWrapping="Wrap" Text="Столбец наименование Combobox с фильтром в режиме вольного текста"/>
-                    <ListView Margin="10" ItemsSource="{Binding Operations}" KeyboardNavigation.TabNavigation="Continue">
-                        <ListView.ItemContainerStyle>
-                            <Style TargetType="ListViewItem">
-                                <Setter Property="Margin" Value="0"/>
-                                <Setter Property="Padding" Value="0"/>
-                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                            </Style>
-                        </ListView.ItemContainerStyle>
-                        <ListView.View>
-                            <GridView>
-                                <GridView.Columns>
-                                    <GridViewColumn Header="Номер">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <TextBox Text="{Binding Number}"/>
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-                                    <GridViewColumn Header="Наименование" Width="400">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <toolkit:FilterableComboBox WatermarkText="Наименование операции" AllowFreeText="True" FocusVisualStyle="{x:Null}"
-                                                                            Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" 
-                                                                            SelectedItem="{Binding Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" 
-                                                                            ItemsSource="{Binding DataContext.OperationsSource, RelativeSource={RelativeSource AncestorType=Window}}"/>
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
-                                </GridView.Columns>
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
-                </StackPanel>
-            </TabItem>
-        </TabControl>
-        
-    </DockPanel>
+            <toolkit:FilterableComboBox.ItemTemplate>
+              <DataTemplate>
+                <TextBlock toolkitBeh:TextBlockHighlightBehavior.Text="{Binding}" 
+                           toolkitBeh:TextBlockHighlightBehavior.HighlightedText="{Binding SearchText, RelativeSource={RelativeSource AncestorType=toolkit:FilterableComboBox, Mode=FindAncestor}}"/>
+              </DataTemplate>
+            </toolkit:FilterableComboBox.ItemTemplate>
+          </toolkit:FilterableComboBox>
+          <TextBlock Margin="10 10 10 0" TextWrapping="Wrap" Text="Столбец наименование Combobox с фильтром в режиме вольного текста"/>
+          <ListView Margin="10" ItemsSource="{Binding Operations}" KeyboardNavigation.TabNavigation="Continue">
+            <ListView.ItemContainerStyle>
+              <Style TargetType="ListViewItem">
+                <Setter Property="Margin" Value="0"/>
+                <Setter Property="Padding" Value="0"/>
+                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+              </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.View>
+              <GridView>
+                <GridView.Columns>
+                  <GridViewColumn Header="Номер">
+                    <GridViewColumn.CellTemplate>
+                      <DataTemplate>
+                        <TextBox Text="{Binding Number}"/>
+                      </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                  </GridViewColumn>
+                  <GridViewColumn Header="Наименование" Width="400">
+                    <GridViewColumn.CellTemplate>
+                      <DataTemplate>
+                        <toolkit:FilterableComboBox WatermarkText="Наименование операции" AllowFreeText="True" FocusVisualStyle="{x:Null}"
+                                                    Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" 
+                                                    SelectedItem="{Binding Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" 
+                                                    ItemsSource="{Binding DataContext.OperationsSource, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                      </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                  </GridViewColumn>
+                </GridView.Columns>
+              </GridView>
+            </ListView.View>
+          </ListView>
+        </StackPanel>
+      </TabItem>
+    </TabControl>
+
+  </DockPanel>
 </Window>
