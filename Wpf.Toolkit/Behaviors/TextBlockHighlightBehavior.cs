@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -9,7 +6,6 @@ using System.Windows.Media;
 
 namespace Wpf.Toolkit.Behaviors
 {
-
   public class TextBlockHighlightBehavior
   {
     public static readonly DependencyProperty TextProperty =
@@ -42,47 +38,46 @@ namespace Wpf.Toolkit.Behaviors
       if (d is not TextBlock textBlock)
         return;
 
-      textBlock.Dispatcher.BeginInvoke(new Action(() => SetTextBlockTextAndHighlightTerm(textBlock)), System.Windows.Threading.DispatcherPriority.Background);
+      SetTextBlockHighlightedText(textBlock);
     }
 
-    private static void SetTextBlockTextAndHighlightTerm(TextBlock textBlock)
+    private static void SetTextBlockHighlightedText(TextBlock textBlock)
     {
       var text = GetText(textBlock);
       if (string.IsNullOrEmpty(text) || !textBlock.IsVisible)
         return;
 
       var highlightedText = (string)textBlock.GetValue(HighlightedTextProperty);
-      if (!string.IsNullOrEmpty(highlightedText) && text.IndexOf(highlightedText, StringComparison.OrdinalIgnoreCase) != -1)
-      {
-        textBlock.Inlines.Clear();
-        var foreground = GetForeground(textBlock);
-        var background = GetBackground(textBlock);
-        var foundIndex = text.IndexOf(highlightedText, StringComparison.OrdinalIgnoreCase);
-
-        for (var i = 0; i < text.Length;)
-        {
-          if (foundIndex == -1)
-          {
-            AddPart(textBlock, text.Substring(i, text.Length - i));
-            break;
-          }
-
-          if (foundIndex > i)
-          {
-            AddPart(textBlock, text.Substring(i, foundIndex - i));
-            i = foundIndex;
-          }
-          else
-          {
-            AddHighlightedPart(textBlock, text.Substring(foundIndex, highlightedText.Length), background, foreground);
-            foundIndex = text.IndexOf(highlightedText, foundIndex + highlightedText.Length, StringComparison.OrdinalIgnoreCase);
-            i += highlightedText.Length;
-          }
-        }
-      }
-      else
+      if (string.IsNullOrEmpty(highlightedText) || text.IndexOf(highlightedText, StringComparison.OrdinalIgnoreCase) == -1)
       {
         textBlock.Text = text;
+        return;
+      }
+
+      textBlock.Inlines.Clear();
+      var foreground = GetForeground(textBlock);
+      var background = GetBackground(textBlock);
+      var foundIndex = text.IndexOf(highlightedText, StringComparison.OrdinalIgnoreCase);
+
+      for (var i = 0; i < text.Length;)
+      {
+        if (foundIndex == -1)
+        {
+          AddPart(textBlock, text.Substring(i, text.Length - i));
+          break;
+        }
+
+        if (foundIndex > i)
+        {
+          AddPart(textBlock, text.Substring(i, foundIndex - i));
+          i = foundIndex;
+        }
+        else
+        {
+          AddHighlightedPart(textBlock, text.Substring(foundIndex, highlightedText.Length), background, foreground);
+          foundIndex = text.IndexOf(highlightedText, foundIndex + highlightedText.Length, StringComparison.OrdinalIgnoreCase);
+          i += highlightedText.Length;
+        }
       }
     }
 
