@@ -44,7 +44,7 @@ namespace Wpf.Toolkit.Behaviors
     private static void SetTextBlockHighlightedText(TextBlock textBlock)
     {
       var text = GetText(textBlock);
-      if (string.IsNullOrEmpty(text) || !textBlock.IsVisible)
+      if (string.IsNullOrEmpty(text))
         return;
 
       var highlightedText = (string)textBlock.GetValue(HighlightedTextProperty);
@@ -58,15 +58,9 @@ namespace Wpf.Toolkit.Behaviors
       var foreground = GetForeground(textBlock);
       var background = GetBackground(textBlock);
       var foundIndex = text.IndexOf(highlightedText, StringComparison.OrdinalIgnoreCase);
-
-      for (var i = 0; i < text.Length;)
+      var i = 0;
+      while (foundIndex != -1)
       {
-        if (foundIndex == -1)
-        {
-          AddPart(textBlock, text.Substring(i, text.Length - i));
-          break;
-        }
-
         if (foundIndex > i)
         {
           AddPart(textBlock, text.Substring(i, foundIndex - i));
@@ -79,6 +73,9 @@ namespace Wpf.Toolkit.Behaviors
           i += highlightedText.Length;
         }
       }
+      
+      if (i < text.Length)
+        AddPart(textBlock, text.Substring(i, text.Length - i));
     }
 
     private static void AddPart(TextBlock textBlock, string part)
