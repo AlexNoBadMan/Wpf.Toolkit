@@ -67,7 +67,7 @@ namespace Wpf.Toolkit
             IsTextSearchEnabled = false;
             Loaded += FilterableComboBox_Loaded;
         }
-     
+    
         private void FilterableComboBox_Loaded(object sender, RoutedEventArgs e)
         {
             if (IsAddExternalContainerMode)
@@ -165,10 +165,23 @@ namespace Wpf.Toolkit
                     base.OnPreviewKeyDown(e);
                 }
             }
-            else if (IsAddExternalContainerMode && e.Key == Key.Enter)
+            else if (e.Key == Key.Enter)
             {
-                GetBindingExpression(SelectedItemProperty).UpdateSource();
-                SelectedIndex = -1;
+                if (IsAddExternalContainerMode)
+                {
+                    GetBindingExpression(SelectedItemProperty).UpdateSource();
+                    SelectedIndex = -1;
+                } 
+                else 
+                {
+                    if (IsDropDownOpen)
+                    {
+                        CheckSelectedItemText();
+                        _editableTextBox.SelectAll();
+                    }
+
+                    base.OnPreviewKeyDown(e);
+                }
             }
             else
             {
@@ -238,7 +251,7 @@ namespace Wpf.Toolkit
                 IsDropDownOpen = true;
             }
 
-            if (AutoSelectItem && Items.Count > 1)
+            if (AutoSelectItem && Items.Count >= 1)
             {
                 foreach (var item in Items)
                 {// в методе Contains при !AllowFreeText в списке всегда будет отображаться текущий SelectedItem даже если он не подходит по условию поиска
