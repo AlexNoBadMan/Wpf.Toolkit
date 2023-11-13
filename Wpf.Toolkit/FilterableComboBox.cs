@@ -174,16 +174,15 @@ namespace Wpf.Toolkit
                 } 
                 else 
                 {
-                    if (AllowFreeText)
+                    if (IsDropDownOpen)
                     {
                         IsDropDownOpen = false;
+                        if (!AllowFreeText)
+                        {
+                            CheckSelectedItemText();
+                            _editableTextBox.SelectAll();
+                        }
                     }
-                    else if (IsDropDownOpen)
-                    {
-                        CheckSelectedItemText();
-                        _editableTextBox.SelectAll();
-                    }
-
                     base.OnPreviewKeyDown(e);
                 }
             }
