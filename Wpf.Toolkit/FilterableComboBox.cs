@@ -174,7 +174,11 @@ namespace Wpf.Toolkit
                 } 
                 else 
                 {
-                    if (IsDropDownOpen)
+                    if (AllowFreeText)
+                    {
+                        IsDropDownOpen = false;
+                    }
+                    else if (IsDropDownOpen)
                     {
                         CheckSelectedItemText();
                         _editableTextBox.SelectAll();
